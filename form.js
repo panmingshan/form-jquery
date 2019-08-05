@@ -1,21 +1,53 @@
 
-// form表单自动验证
-var form = function (param) {
+/**
+ * 1、
+ * 构造方式
+ * form表单自动验证  : var obj = new MForm(option)
+ * option ： {changeCb ：function,form : string(表单标识)}
+ * obj可调用方法 ： {
+ * validate : function(cb){} cb ：function(isvalidate，errorList){},
+ * modelAction ： function(string|obj,value|isCheckRule),isCheckRule}
+ * 
+ * 2、
+ * 表单元素：
+ * form ： 
+ * data-models ： 表单绑定数据，必须为对象（双向，eval执行）
+ * data-rules ： 表单验证规则，必须为对象
+ * formItem ：
+ * data-model ： 绑定的model数据 
+ * data-rule ： 验证规则，多个规则用,隔开
+ * data-html-[modelName] : 用来动态显示model的元素
+ * data-for : 双向绑定的数据元素，默认为当前data-model绑定的元素
+ * data-rule-trigger-for ： 表单验证触发的元素（针对利用第三方控件来实现select等效果的兼容处理，默认为 data-for所指向的元素）,多个元素用,隔开
+ * data-error-class-for ：验证失败时候绑定的class元素，默认为当前data-mode所指向的元素
+ * data-emit-event : 双向绑定触发事件、默认为change事件，可追加
+ * 
+ * 3、
+ * rules实例 ： character[
+ * {required : true,trigger : "blur"，message ： "不能为空"，errorClass ： "error",cb : function},
+ * {rule : //g : regExp,trigger : "blur"，message ： "不能为空"，errorClass ： "error",cb : function}
+ * ]
+ * 
+ */ 
+var MForm = function (param) {
     this._init(param);
 }
-
-form.prototype = {
+/**
+ * _init
+ */
+MForm.prototype = {
+    // 初始化
     _init: function (param) {
         param = param || {};
 
         this._initStaticData(param)
             ._generateItemRuleAndModel()
             ._setItemEvent()
-            ._refreshView()
-            ._modelAction();
+            ._refreshView();
     },
     /**
      * @property
+     * 初始化静态数据
      * @param {} param 
      */
     _initStaticData: function (param) {
@@ -239,7 +271,7 @@ form.prototype = {
      * [obj : json,isCheckRule : boolean = false] obj为键值对的形式，用来存数据，isCheckRule为是否验证表单规则
      * [key : string,value : any,isCheckRule : boolean = false]key键 value值 boolean布尔值
      */
-    _modelAction: function () {
+    modelAction: function () {
         var _argus = arguments;
         if (_argus.length) {
             if (_argus[0] instanceof Object) {
