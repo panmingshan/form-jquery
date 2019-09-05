@@ -1,3 +1,7 @@
+## 1.0.2
+1、input支持checkbox类型
+2、rule支持函数形式
+
 # form-jquery
 基于jquery 的form表单自动验证
 

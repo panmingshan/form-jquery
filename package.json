@@ -1,0 +1,25 @@
+{
+  "name": "form-jquery-m",
+  "version": "1.0.2",
+  "description": "基于jquery的表单验证",
+  "main": "form.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/panmingshan/form-jquery.git"
+  },
+  "keywords": [
+    "表单验证，jquery"
+  ],
+  "author": "pms",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/panmingshan/form-jquery/issues"
+  },
+  "homepage": "https://github.com/panmingshan/form-jquery#readme",
+  "dependencies": {
+    "jquery": "^3.4.1"
+  }
+}

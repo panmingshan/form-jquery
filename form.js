@@ -26,6 +26,7 @@
  * rules实例 ： character[
  * {required : true,trigger : "blur"，message ： "不能为空"，errorClass ： "error",cb : function},
  * {rule : //g : regExp,trigger : "blur"，message ： "不能为空"，errorClass ： "error",cb : function}
+ * {rule : function : function(value){return  boolean},trigger : "blur"，message ： "不能为空"，errorClass ： "error",cb : function}
  * ]
  * 
  */ 
@@ -39,11 +40,14 @@ MForm.prototype = {
     // 初始化
     _init: function (param) {
         param = param || {};
-
-        this._initStaticData(param)
+        
+        this.$form = $(param.form);
+        if(this.$form.length){
+            this._initStaticData(param)
             ._generateItemRuleAndModel()
             ._setItemEvent()
             ._refreshView();
+        }
     },
     /**
      * @property
@@ -51,14 +55,13 @@ MForm.prototype = {
      * @param {} param 
      */
     _initStaticData: function (param) {
-        this.$form = $(param.form);
         this.$changeCb = param.changeCb
 
         var $data = this.$form.data()
         // 数据模型（地址指向）
-        this.models = eval($data.models)
-        // 验证规则
-        this.rules = eval($data.rules)
+        this.models = param.models || eval($data.models)
+        // 验证规则（地址指向）
+        this.rules = param.rules || eval($data.rules)
 
         return this;
     },
@@ -124,7 +127,18 @@ MForm.prototype = {
             if (item.isModel) {
                 ! function (item, key) {
                     item.modelFor.on("change " + item.emitEvent, function (e) {
-                        _this.models[key] = e.target.value;
+
+                        if(e.target.type == "checkbox"){
+                            // var checkValue = e.target.value,uncheckValue = "";
+                            // if(!checkValue){
+                            var  checkValue = true;uncheckValue = false
+                            // }
+
+                            _this.models[key] = e.target.checked?checkValue:uncheckValue;
+                        }
+                        else{
+                            _this.models[key] = e.target.value;
+                        }
                         // _this._refreshView({modelList : [key],isCheckRule : false});
 
                         _this._renderExtraHtml(item.dHtml, _this.models[key]);
@@ -191,7 +205,13 @@ MForm.prototype = {
             var item = _this.formItemObj[ele]
             if (!item) return;
 
-            if (item.isModel) item.modelFor.val(_this.models[ele])
+            if (item.isModel){
+                if(item.modelFor.attr("type") == "checkbox"){
+                    item.modelFor.filter('[type=checkbox]').prop("checked",!!_this.models[ele])
+                }else{
+                    item.modelFor.val(_this.models[ele])
+                }
+            }
             _this._renderExtraHtml(item.dHtml, _this.models[ele]);
         })
 
@@ -205,7 +225,7 @@ MForm.prototype = {
     /**
      * @private
      * 检查验证规则 默认为验证全部
-     * @param {list : [modelkey1,modelkey2...]} param 
+     * @param [modelkey1,modelkey2...] 
      */
     _checkRules: function (param) {
         var _this = this,
@@ -222,7 +242,7 @@ MForm.prototype = {
                 for (var i = 0; i < ruleListItem.length; i++) {
                     var ruleItem = ruleListItem[i],
                         validate = true;
-                    if ((ruleItem.required && !value) || (ruleItem.rule instanceof RegExp && !ruleItem.rule.test(value))) {
+                    if ((ruleItem.required && !value) || (ruleItem.rule instanceof RegExp && !ruleItem.rule.test(value)) || (ruleItem.rule instanceof Function && !ruleItem.rule(value))) {
                         // 只添加一条
                         if (!findInvalid) {
                             var errorItem = $.extend({}, item, {
@@ -231,12 +251,12 @@ MForm.prototype = {
                             errorList.push(errorItem)
                         }
 
-                        ruleItem.errClass && item.errorClassFor.addClass(ruleItem.errClass)
+                        ruleItem.errorClass && item.errorClassFor.addClass(ruleItem.errorClass)
                         validate = false;
                         findInvalid = true;
                         // break;
                     } else {
-                        ruleItem.errClass && item.errorClassFor.removeClass(ruleItem.errClass)
+                        ruleItem.errorClass && item.errorClassFor.removeClass(ruleItem.errorClass)
                     }
 
                     if (ruleItem.rule instanceof RegExp) ruleItem.rule.lastIndex = 0;
@@ -272,7 +292,7 @@ MForm.prototype = {
      * [key : string,value : any,isCheckRule : boolean = false]key键 value值 boolean布尔值
      */
     modelAction: function () {
-        var _argus = arguments;
+        var _argus = arguments,_this = this;
         if (_argus.length) {
             if (_argus[0] instanceof Object) {
                 var isCheckRule = _argus[1]
